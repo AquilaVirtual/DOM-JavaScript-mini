@@ -17,17 +17,16 @@ class TabItem {
 }
 
 class TabLink {
-  constructor(element, parent) {
-    this.element = element;// attach dom element to object
-    this.tabs = parent;// attach parent to object
-    this.tabItem = this.tabs.getTab(this.element.dataset.tab);// assign this to the associated tab using the parent's "getTab" method by passing it the correct data
+  constructor(element) {
+    this.element = element;// attach dom element to object               
+    this.tabItem = this.getTab(this.element.dataset.tab);// assign this to the associated tab using the parent's "getTab" method by passing it the correct data
     // reassign this.tabItem to be a new instance of TabItem, passing it this.tabItem
-    this.tabItem = new TabItem(this.tabItem);
-    this.element.addEventListener('click', (event) => {
-      event.stopPropagation();
-      this.tabs.updateActive(this);
-      this.select();
-    });
+     this.tabItem = new TabItem(this.tabItem);
+    // this.element.addEventListener('click', (event) => {
+    //   event.stopPropagation();
+    //   this.tabs.updateActive(this);
+    //   this.select();
+    // });
   };
 
   select() {
@@ -39,9 +38,13 @@ class TabLink {
 
   deselect() {
     // deselect this link
-    this.element.classList.remove("Tabs__link-selection");
+    this.element.classList.remove("Tabs__link-selected");
     // deselect the associated tab
     this.tabItem.deselect();
+  }
+  getTab(data) {
+    // use the tab item classname and the data attribute to select the proper tab
+    return this.element.parentNode.parentNode.querySelector(`.Tabs__item[data-tab = "${data}"]`);
   }
 }
 
@@ -50,7 +53,12 @@ class Tabs {
     this.element = element;// attaches the dom node to the object as "this.element"
     this.links = element.querySelectorAll(".Tabs__link");
     this.links = Array.from(this.links).map((link) => {
-      return new TabLink(link, this);
+      const newlink = new TabLink(link, this);
+      link.addEventListener('click', (event) => {
+        this.updateActive(newlink);
+        newlink.select();
+      });
+      return newlink;     
     });
     this.activeLink = this.links[0];
     this.init();
@@ -58,8 +66,8 @@ class Tabs {
 
   init() {
     // select the first link and tab upon ititialization
-    this.activeLink = this.links[0];
-    this.links[0].select();
+    
+    this.activeLink.select();
   }
 
   updateActive(newActive) {
@@ -67,12 +75,7 @@ class Tabs {
     this.activeLink.deselect();
     // assign the new active link
     this.activeLink = newActive;
-  }
-
-  getTab(data) {
-    // use the tab item classname and the data attribute to select the proper tab
-    return this.element.querySelector(`.Tabs__item[data-tab = "${data}"]`);
-  }
+  }  
 
 }
 
